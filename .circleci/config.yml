@@ -16,6 +16,7 @@ jobs:
           path: .
       - terraform/apply:
           path: .
+
 workflows:
   single-job-lifecycle:
     jobs:
