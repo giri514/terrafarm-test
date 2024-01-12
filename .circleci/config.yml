@@ -7,16 +7,15 @@ jobs:
     steps:
       - checkout
       - terraform/init:
-          path: .
+          path: environment/dev
       - terraform/validate:
-          path: .
+          path: environment/dev
       - terraform/fmt:
-          path: .
+          path: environment/dev
       - terraform/plan:
-          path: .
+          path: environment/dev
       - terraform/apply:
-          path: .
-
+          path: environment/dev
 workflows:
   single-job-lifecycle:
     jobs:
