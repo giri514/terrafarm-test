@@ -10,8 +10,6 @@ jobs:
           path: environment/dev
       - terraform/validate:
           path: environment/dev
-      - terraform/fmt:
-          path: environment/dev
       - terraform/plan:
           path: environment/dev
       - terraform/apply:
