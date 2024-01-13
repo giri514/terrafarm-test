@@ -3,25 +3,24 @@ version: 2.1
 jobs:
   terraform:
     docker:
-      - image: hashicorp/terraform:latest
+      - image: hashicorp/terraform:0.15.0  # Use the specific version you want
 
-#    working_directory: ~/terrafarm-test
+    working_directory: ~/terrafarm-test
 
     steps:
       - checkout
 
       - run:
           name: Terraform Init
-          command: terraform init
-          path: environment/dev/
-          
+          command: terraform init environment/dev/
+
       - run:
           name: Terraform Plan
-          command: terraform plan
+          command: terraform plan environment/dev/
 
       - run:
           name: Terraform Apply
-          command: terraform apply -auto-approve
+          command: terraform apply -auto-approve environment/dev/
 
 workflows:
   version: 2
