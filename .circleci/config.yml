@@ -1,45 +1,77 @@
 version: 2.1
 
-parameters:
-  environment:
-    description: "Deployed environment folder name"
-    type: string
-    default: ""
-  environment_uppercase:
-    description: "Deployed environment folder name - uppercase"
-    type: string
-    default: ""
-
 jobs:
-  init-terraform:
+  init-terraform-dev:
     docker:
       - image: hashicorp/terraform:latest
     steps:
       - checkout
-      - run: |
-          cd ./environment/<< parameters.environment >>/
-          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_<< parameters.environment_uppercase >>
-          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_<< parameters.environment_uppercase >>
-          export AWS_DEFAULT_REGION=us-east-1
-          terraform init \
-            -backend-config="bucket=terrastatekade" \
-            -backend-config="key=terraform.tfstate" \
-            -backend-config="region=us-east-1" \
-            -backend-config="encrypt=true"
+      - run:
+          name: Terraform Init - Dev
+          command: |
+            cd ./environment/dev/
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            export AWS_DEFAULT_REGION=us-east-1
+            terraform init \
+              -backend-config="bucket=terrastatekade" \
+              -backend-config="key=terraform.tfstate" \
+              -backend-config="region=us-east-1" \
+              -backend-config="encrypt=true"
 
-  tf_plan:
+  tf_plan_dev:
     docker:
       - image: hashicorp/terraform:latest
     steps:
       - checkout
       - attach_workspace:
           at: /tmp
-      - run: |
-          cd ./environment/<< parameters.environment >>/
-          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_<< parameters.environment_uppercase >>
-          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_<< parameters.environment_uppercase >>
-          export AWS_DEFAULT_REGION=us-east-1
-          terraform plan -out=/tmp/plan.out
+      - run:
+          name: Terraform Plan - Dev
+          command: |
+            cd ./environment/dev/
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+            export AWS_DEFAULT_REGION=us-east-1
+            terraform plan -out=/tmp/plan.out
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - plan.out
+
+  init-terraform-test:
+    docker:
+      - image: hashicorp/terraform:latest
+    steps:
+      - checkout
+      - run:
+          name: Terraform Init - Test
+          command: |
+            cd ./environment/test/
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST
+            export AWS_DEFAULT_REGION=us-east-1
+            terraform init \
+              -backend-config="bucket=terrastatekade" \
+              -backend-config="key=terraform.tfstate" \
+              -backend-config="region=us-east-1" \
+              -backend-config="encrypt=true"
+
+  tf_plan_test:
+    docker:
+      - image: hashicorp/terraform:latest
+    steps:
+      - checkout
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: Terraform Plan - Test
+          command: |
+            cd ./environment/test/
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST
+            export AWS_DEFAULT_REGION=us-east-1
+            terraform plan -out=/tmp/plan.out
       - persist_to_workspace:
           root: /tmp
           paths:
@@ -49,24 +81,13 @@ workflows:
   version: 2
   main:
     jobs:
-      - init-terraform:
-          environment: "dev"
-          environment_uppercase: "DEV"
-
-      - init-terraform:
-          environment: "test"
-          environment_uppercase: "TEST"
+      - init-terraform-dev
+      - tf_plan_dev:
           requires:
-            - init-terraform
-
-      - tf_plan:
-          environment: "dev"
-          environment_uppercase: "DEV"
+            - init-terraform-dev
+      - init-terraform-test:
           requires:
-            - init-terraform
-
-      - tf_plan:
-          environment: "test"
-          environment_uppercase: "TEST"
+            - tf_plan_dev
+      - tf_plan_test:
           requires:
-            - init-terraform
+            - init-terraform-test
