@@ -9,19 +9,15 @@ jobs:
       - terraform/init:
           checkout: true
           context: terraform
-          path: environment/dev/
       - terraform/validate:
           checkout: true
           context: terraform
-          path: environment/dev/
       - terraform/plan:
           checkout: true
           context: terraform
-          path: environment/dev/
       - terraform/apply:
           checkout: true
           context: terraform
-          path: environment/dev/
 workflows:
   single-job-lifecycle:
     jobs:
