@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: hashicorp/terraform:latest
 
-    working_directory: /environment/dev
+    working_directory: ~/terrafarm-test/environment/dev
 
     steps:
       - checkout
