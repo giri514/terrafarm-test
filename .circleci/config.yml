@@ -6,13 +6,8 @@ jobs:
       - image: hashicorp/terraform:1.6.5
 
     environment:
-<<<<<<< HEAD
       AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-=======
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
->>>>>>> 369adb3 (env)
 
     steps:
       - checkout
@@ -73,7 +68,3 @@ workflows:
             branches:
               only:
                 - main
-<<<<<<< HEAD
-=======
-
->>>>>>> 369adb3 (env)
