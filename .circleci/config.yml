@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: hashicorp/terraform:latest
 
-    working_directory: ~/terrafarm-test
+#    working_directory: ~/terrafarm-test
 
     steps:
       - checkout
@@ -13,7 +13,8 @@ jobs:
       - run:
           name: Terraform Init
           command: terraform init
-
+          path: environment/dev/
+          
       - run:
           name: Terraform Plan
           command: terraform plan
