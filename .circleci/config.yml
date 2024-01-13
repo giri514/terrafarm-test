@@ -4,90 +4,90 @@ jobs:
   init-terraform-dev:
     docker:
       - image: hashicorp/terraform:latest
-    steps:
-      - checkout
-      - run:
-          name: Terraform Init - Dev
-          command: |
-            cd ./environment/dev/
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-            export AWS_DEFAULT_REGION=us-east-1
-            terraform init \
-              -backend-config="bucket=terrastatekade" \
-              -backend-config="key=terraform.tfstate" \
-              -backend-config="region=us-east-1" \
-              -backend-config="encrypt=true"
 
-  tf_plan_dev:
-    docker:
-      - image: hashicorp/terraform:latest
     steps:
       - checkout
-      - attach_workspace:
-          at: /tmp
+
       - run:
-          name: Terraform Plan - Dev
+          name: Setup Terraform - Dev
           command: |
-            cd ./environment/dev/
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-            export AWS_DEFAULT_REGION=us-east-1
-            terraform plan -out=/tmp/plan.out
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - plan.out
+            mkdir -p environment/dev
+            echo 'backend "s3" {' > environment/dev/backend.tf
+            echo '    bucket         = "terrastatekade"' >> environment/dev/backend.tf
+            echo '    key            = "terraform-dev.tfstate"' >> environment/dev/backend.tf
+            echo '    region         = "us-east-1"' >> environment/dev/backend.tf
+            echo '}' >> environment/dev/backend.tf
+            cp -r modules environment/dev/
+            cp environment/dev/main.tf environment/dev/modules/kadenair/main.tf
+            terraform init environment/dev
+          environment:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_DEFAULT_REGION: "us-east-1"
 
   init-terraform-test:
     docker:
       - image: hashicorp/terraform:latest
+
     steps:
       - checkout
-      - run:
-          name: Terraform Init - Test
-          command: |
-            cd ./environment/test/
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST
-            export AWS_DEFAULT_REGION=us-east-1
-            terraform init \
-              -backend-config="bucket=terrastatekade" \
-              -backend-config="key=terraform.tfstate" \
-              -backend-config="region=us-east-1" \
-              -backend-config="encrypt=true"
 
-  tf_plan_test:
+      - run:
+          name: Setup Terraform - Test
+          command: |
+            mkdir -p environment/test
+            echo 'backend "s3" {' > environment/test/backend.tf
+            echo '    bucket         = "test-purpose-01"' >> environment/test/backend.tf
+            echo '    key            = "terraform-test.tfstate"' >> environment/test/backend.tf
+            echo '    region         = "us-east-1"' >> environment/test/backend.tf
+            echo '}' >> environment/test/backend.tf
+            cp -r modules environment/test/
+            cp environment/test/main.tf environment/test/modules/kadenair/main.tf
+            terraform init environment/test
+          environment:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_TEST
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_TEST
+            AWS_DEFAULT_REGION: "us-east-1"
+
+  terraform-plan-dev:
     docker:
       - image: hashicorp/terraform:latest
+
     steps:
       - checkout
-      - attach_workspace:
-          at: /tmp
+
+      - run:
+          name: Terraform Plan - Dev
+          command: terraform plan -var-file=environment/dev/terraform.tfvars environment/dev
+          environment:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+            AWS_DEFAULT_REGION: "us-east-1"
+
+  terraform-plan-test:
+    docker:
+      - image: hashicorp/terraform:latest
+
+    steps:
+      - checkout
+
       - run:
           name: Terraform Plan - Test
-          command: |
-            cd ./environment/test/
-            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_TEST
-            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_TEST
-            export AWS_DEFAULT_REGION=us-east-1
-            terraform plan -out=/tmp/plan.out
-      - persist_to_workspace:
-          root: /tmp
-          paths:
-            - plan.out
+          command: terraform plan -var-file=environment/test/terraform.tfvars environment/test
+          environment:
+            AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_TEST
+            AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_TEST
+            AWS_DEFAULT_REGION: "us-east-1"
 
 workflows:
   version: 2
-  main:
+  build:
     jobs:
       - init-terraform-dev
-      - tf_plan_dev:
+      - init-terraform-test
+      - terraform-plan-dev:
           requires:
             - init-terraform-dev
-      - init-terraform-test:
-          requires:
-            - tf_plan_dev
-      - tf_plan_test:
+      - terraform-plan-test:
           requires:
             - init-terraform-test
