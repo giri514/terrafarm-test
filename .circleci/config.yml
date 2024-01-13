@@ -4,9 +4,11 @@ parameters:
   environment:
     description: "Deployed environment folder name"
     type: string
+    default: ""
   environment_uppercase:
     description: "Deployed environment folder name - uppercase"
     type: string
+    default: ""
 
 jobs:
   init-terraform:
@@ -48,6 +50,8 @@ workflows:
       - init-terraform:
           environment: "test"
           environment_uppercase: "TEST"
+          requires:
+            - init-terraform
 
       - tf_plan:
           environment: "dev"
