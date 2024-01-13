@@ -1,70 +1,62 @@
 version: 2.1
 
+parameters:
+  environment:
+    description: "Deployed environment folder name"
+    type: string
+  environment_uppercase:
+    description: "Deployed environment folder name - uppercase"
+    type: string
+
 jobs:
-  terraform_dev:
+  init-terraform:
     docker:
-      - image: hashicorp/terraform:1.6.5
-
-    environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-
+      - image: hashicorp/terraform:latest
     steps:
       - checkout
+      - run: |
+          cd ./environment/<< parameters.environment >>/
+          terraform init \
+            -backend-config="bucket=terrastatekade" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="encrypt=true"
 
-      - run:
-          name: Terraform Init (Dev)
-          command: terraform init
-          path: environment/dev/
-
-      - run:
-          name: Terraform Plan (Dev)
-          command: terraform plan
-          path: environment/dev/
-
-      - run:
-          name: Terraform Apply (Dev)
-          command: terraform apply -auto-approve
-          path: environment/dev/
-
-  terraform_test:
+  tf_plan:
     docker:
-      - image: hashicorp/terraform:1.6.5
-
-    environment:
-      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_TEST
-      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_TEST
-
+      - image: hashicorp/terraform:latest
     steps:
       - checkout
-
-      - run:
-          name: Terraform Init (Test)
-          command: terraform init
-          path: environment/test/
-
-      - run:
-          name: Terraform Plan (Test)
-          command: terraform plan
-          path: environment/test/
-
-      - run:
-          name: Terraform Apply (Test)
-          command: terraform apply -auto-approve
-          path: environment/test/
+      - attach_workspace:
+          at: /tmp
+      - run: |
+          cd ./environment/<< parameters.environment >>/
+          terraform plan -out=/tmp/plan.out
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - plan.out
 
 workflows:
   version: 2
   main:
     jobs:
-      - terraform_dev:
-          filters:
-            branches:
-              only:
-                - main
+      - init-terraform:
+          environment: "dev"
+          environment_uppercase: "DEV"
 
-      - terraform_test:
-          filters:
-            branches:
-              only:
-                - main
+      - init-terraform:
+          environment: "test"
+          environment_uppercase: "TEST"
+
+      - tf_plan:
+          environment: "dev"
+          environment_uppercase: "DEV"
+          requires:
+            - init-terraform
+
+      - tf_plan:
+          environment: "test"
+          environment_uppercase: "TEST"
+          requires:
+            - init-terraform
