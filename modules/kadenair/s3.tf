@@ -157,7 +157,9 @@ resource "aws_s3_bucket_policy" "reece_s3_bucket_policy" {
 }
 EOF
   depends_on = [aws_s3_bucket.reece_s3_bucket]
-
+  provisioner "local-exec" {
+    command = "sleep 30"  # Pause for 30 seconds
+  }
 }
 
 resource "aws_s3_bucket" "reece_s3_bucket" {
