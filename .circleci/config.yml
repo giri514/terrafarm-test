@@ -11,7 +11,11 @@ jobs:
 
       - run:
           name: Terraform Init
-          command: terraform init
+          command: terraform init \
+  -backend-config="bucket=terrastatekade" \
+  -backend-config="key=terraform.tfstate" \
+  -backend-config="region=us-east-1"
+  
           path: environment/dev/
 
       - run:
