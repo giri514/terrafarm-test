@@ -1,30 +1,35 @@
-version: '2.1'
-orbs:
-  terraform: circleci/terraform@3.1
+version: 2.1
+ 
 jobs:
-  single-job-lifecycle:
-    executor: terraform/default
+  build:
+    docker:
+      - image: hashicorp/terraform:1.0.4
+ 
+    working_directory: environment/dev
+ 
     steps:
       - checkout
-      - terraform/init:
-          checkout: true
-          context: terraform
-          path: environment/dev/
-      - terraform/validate:
-          checkout: true
-          context: terraform
-          path: environment/dev/
-      - terraform/plan:
-          checkout: true
-          context: terraform
-          path: environment/dev/
-      - terraform/apply:
-          checkout: true
-          context: terraform
-          path: environment/dev/
+ 
+      # Install any dependencies needed for your Terraform code
+      # - run:
+      #     name: Install Dependencies
+      #     command: |
+      #       apt-get update && apt-get install -y <your-package>
+ 
+      - run:
+          name: Terraform Init
+          command: terraform init
+ 
+      - run:
+          name: Terraform Plan
+          command: terraform plan -out=tfplan
+ 
+      - run:
+          name: Terraform Apply
+          command: terraform apply -auto-approve tfplan
+ 
 workflows:
-  single-job-lifecycle:
+  version: 2
+  build:
     jobs:
-      - single-job-lifecycle
-
-
+      - build
