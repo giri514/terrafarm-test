@@ -58,7 +58,9 @@ jobs:
 
       - run:
           name: Terraform Plan - Dev
-          command: terraform plan -var-file=environment/dev/terraform.tfvars environment/dev
+          command: |
+            cd environment/dev
+            terraform plan -var-file=terraform.tfvars
           environment:
             AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
             AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
@@ -73,7 +75,9 @@ jobs:
 
       - run:
           name: Terraform Plan - Test
-          command: terraform plan -var-file=environment/test/terraform.tfvars environment/test
+          command: |
+            cd environment/test
+            terraform plan -var-file=terraform.tfvars
           environment:
             AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_TEST
             AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_TEST
