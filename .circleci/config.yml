@@ -1,36 +1,70 @@
 version: 2.1
- 
+
 jobs:
-  terraform:
+  terraform_dev:
     docker:
-    - image: hashicorp/terraform:1.6.5
- 
-    #working_directory: ~/Terraform-Test/TF-Modules/EC2
- 
+      - image: hashicorp/terraform:1.6.5
+
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+
     steps:
-    - checkout
- 
-    - run:
-        name: Terraform Init
-        command: terraform init
-        path: environment/dev/
- 
-    - run:
-        name: Terraform plan
-        command: terraform plan
-        path: environment/dev/
- 
-    - run:
-        name: Terraform Apply
-        command: terraform apply -auto-approve
-        path: environment/dev/
- 
+      - checkout
+
+      - run:
+          name: Terraform Init (Dev)
+          command: terraform init
+          path: environment/dev/
+
+      - run:
+          name: Terraform Plan (Dev)
+          command: terraform plan
+          path: environment/dev/
+
+      - run:
+          name: Terraform Apply (Dev)
+          command: terraform apply -auto-approve
+          path: environment/dev/
+
+  terraform_test:
+    docker:
+      - image: hashicorp/terraform:1.6.5
+
+    environment:
+      AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_TEST
+      AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_TEST
+
+    steps:
+      - checkout
+
+      - run:
+          name: Terraform Init (Test)
+          command: terraform init
+          path: environment/test/
+
+      - run:
+          name: Terraform Plan (Test)
+          command: terraform plan
+          path: environment/test/
+
+      - run:
+          name: Terraform Apply (Test)
+          command: terraform apply -auto-approve
+          path: environment/test/
+
 workflows:
   version: 2
   main:
     jobs:
-    - terraform:
-        filters:
-          branches:
-            only:
-            - main
+      - terraform_dev:
+          filters:
+            branches:
+              only:
+                - main
+
+      - terraform_test:
+          filters:
+            branches:
+              only:
+                - main
