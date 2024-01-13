@@ -11,16 +11,20 @@ jobs:
       - checkout
 
       - run:
+          name: Change to Terraform Directory
+          command: cd environment/dev/
+
+      - run:
           name: Terraform Init
-          command: terraform init environment/dev/
+          command: terraform init
 
       - run:
           name: Terraform Plan
-          command: terraform plan environment/dev/
+          command: terraform plan
 
       - run:
           name: Terraform Apply
-          command: terraform apply -auto-approve environment/dev/
+          command: terraform apply -auto-approve
 
 workflows:
   version: 2
