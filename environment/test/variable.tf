@@ -22,6 +22,7 @@ variable "FromEmailAddress"{
   default = "somnath.kadam@aress.com"
 }
 
+
 variable "ReplyToEmailAddress"{
   type        = string
   description = "email addresses"

@@ -19,7 +19,7 @@ provider "aws" {
 module "kadenair" {
   source              = "../../modules/kadenair" # Update with the correct path to your module#
   DomainName          = "torchtest.aress.net"
-  DomainNameDashes    = "cf-dev-kadenair-web-com"
+  DomainNameDashes    = "cf-dev-kadenair-xxx-com"
   Subject             = "Contact us email subject"
   ToEmailAddress      = "${var.ToEmailAddress}"
   FromEmailAddress    = "${var.FromEmailAddress}"
@@ -28,7 +28,7 @@ module "kadenair" {
   environment        = local.environment
   domain              = "torchtest.aress.net"
   certificatedomain   = "torchtest.aress.net"
-  StackNameDashes     = "cf-dev-kadenair-web-com-contact-us"
+  StackNameDashes     = "cf-dev-kadenair-xxx-com-contact-us"
   stage               = "dev"
 }
 
