@@ -10,12 +10,6 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
-backend "s3" {
-    bucket         = "terrastatekade"
-    key            = "terraform.tfstate"
-    region         = "us-east-1"
-}
-
 
 ##################################
 #  Kadenair contactus           #
