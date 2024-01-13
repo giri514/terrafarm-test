@@ -18,6 +18,9 @@ jobs:
       - checkout
       - run: |
           cd ./environment/<< parameters.environment >>/
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_<< parameters.environment_uppercase >>
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_<< parameters.environment_uppercase >>
+          export AWS_DEFAULT_REGION=us-east-1
           terraform init \
             -backend-config="bucket=terrastatekade" \
             -backend-config="key=terraform.tfstate" \
@@ -33,6 +36,9 @@ jobs:
           at: /tmp
       - run: |
           cd ./environment/<< parameters.environment >>/
+          export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_<< parameters.environment_uppercase >>
+          export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_<< parameters.environment_uppercase >>
+          export AWS_DEFAULT_REGION=us-east-1
           terraform plan -out=/tmp/plan.out
       - persist_to_workspace:
           root: /tmp
